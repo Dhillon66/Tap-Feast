@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TapFeast – Kitchen Display</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="kitchen-body">
+  <header class="app-header kitchen-header">
+    <div class="brand">
+      <div class="logo-circle">TF</div>
+      <div>
+        <h1 class="brand-title">Kitchen Display</h1>
+        <p class="brand-subtitle">Incoming table orders</p>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <button id="refreshOrders" class="secondary-btn">Refresh</button>
+      <button id="themeToggle" class="icon-button" aria-label="Toggle theme">
+        ☀️
+      </button>
+    </div>
+  </header>
+
+  <main class="kitchen-main">
+    <section class="orders-board" id="ordersBoard" aria-live="polite">
+      <!-- Orders injected by JS -->
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Orders are stored locally in this browser using localStorage.</p>
+  </footer>
+
+  <script src="kitchen.js"></script>
+</body>
+</html>

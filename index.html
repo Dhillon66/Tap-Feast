@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TapFeast – Tablet Menu</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- LANDING / HOME SCREEN -->
+  <section id="landing" class="landing-screen">
+    <div class="landing-overlay"></div>
+
+    <div class="landing-content">
+      <div class="landing-pill">TapFeast · Table-side ordering</div>
+
+      <h1 class="landing-title">
+        Welcome to <span>TapFeast</span>
+      </h1>
+
+      <p class="landing-subtitle">
+        Browse starters, mains, desserts & drinks right from your table.
+        Tap once. Relax. We’ll send your order straight to the kitchen.
+      </p>
+
+      <button id="startOrderingBtn" class="primary-btn start-order-btn">
+        Start ordering
+      </button>
+
+      <div class="landing-hint">
+        <span class="landing-dot"></span>
+        Tap to open today’s live menu
+      </div>
+    </div>
+
+    <div class="landing-float landing-float-left"></div>
+    <div class="landing-float landing-float-right"></div>
+  </section>
+
+  <!-- MAIN APP SHELL (MENU + CART) -->
+  <div id="appShell" class="app-shell hidden">
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-circle">TF</div>
+        <div>
+          <h1 class="brand-title">TapFeast</h1>
+          <p class="brand-subtitle">Table-side ordering</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="table-input">
+          <label for="tableNumber">Table</label>
+          <input type="number" id="tableNumber" min="1" max="99" value="1" />
+        </div>
+
+        <button id="themeToggle" class="icon-button" aria-label="Toggle theme">
+          🌙
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="menu-section">
+        <!-- RADIO STYLE CATEGORY SELECTOR -->
+        <nav class="category-radio-group" id="categoryRadios">
+          <!-- Radio buttons filled by JS -->
+        </nav>
+
+        <!-- MENU GRID (changes based on selected radio) -->
+        <div id="menuGrid" class="menu-grid">
+          <!-- Cards injected by JS -->
+        </div>
+      </section>
+
+      <aside class="cart-section" aria-label="Order summary">
+        <h2>Your Order</h2>
+        <div id="cartItems" class="cart-items">
+          <p class="empty-cart">No items yet. Tap + to add to your order.</p>
+        </div>
+        <div class="cart-footer">
+          <div class="totals">
+            <span>Total:</span>
+            <span id="cartTotal">$0.00</span>
+          </div>
+          <button id="placeOrderBtn" class="primary-btn">Place Order</button>
+          <p id="orderMessage" class="order-message" aria-live="polite"></p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="app-footer">
+      <p>Order will be sent directly to the kitchen screen.</p>
+      <a href="kitchen.html" target="_blank" class="kitchen-link">
+        Open Kitchen View
+      </a>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
