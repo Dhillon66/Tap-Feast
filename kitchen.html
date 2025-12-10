@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,32 +7,38 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="kitchen-body">
-  <header class="app-header kitchen-header">
-    <div class="brand">
-      <div class="logo-circle">TF</div>
-      <div>
-        <h1 class="brand-title">Kitchen Display</h1>
-        <p class="brand-subtitle">Incoming table orders</p>
+  <div class="kitchen-shell">
+    <header class="app-header kitchen-header">
+      <div class="brand">
+        <div class="logo-wrap">
+          <img src="images/tapfeast-logo.png" alt="TapFeast logo" class="logo-img" />
+        </div>
+        <div>
+          <h1 class="brand-title">Kitchen Display</h1>
+          <p class="brand-subtitle">Incoming orders from TapFeast</p>
+        </div>
       </div>
-    </div>
 
-    <div class="header-controls">
-      <button id="refreshOrders" class="secondary-btn">Refresh</button>
-      <button id="themeToggle" class="icon-button" aria-label="Toggle theme">
-        ☀️
-      </button>
-    </div>
-  </header>
+      <div class="header-right">
+        <button id="clearAllOrdersBtn" class="ghost-btn ghost-danger">
+          Clear All
+        </button>
+      </div>
+    </header>
 
-  <main class="kitchen-main">
-    <section class="orders-board" id="ordersBoard" aria-live="polite">
-      <!-- Orders injected by JS -->
-    </section>
-  </main>
+    <main class="kitchen-main">
+      <section>
+        <h2 class="kitchen-section-title">Active Orders</h2>
+        <div id="ordersBoard" class="orders-board">
+          <!-- JS will render order cards -->
+        </div>
+      </section>
+    </main>
 
-  <footer class="app-footer">
-    <p>Orders are stored locally in this browser using localStorage.</p>
-  </footer>
+    <footer class="app-footer kitchen-footer">
+      <p>Orders are synced using the browser's localStorage (same device).</p>
+    </footer>
+  </div>
 
   <script src="kitchen.js"></script>
 </body>

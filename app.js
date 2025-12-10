@@ -1,533 +1,413 @@
-// TapFeast Tablet Menu – Radio categories + images + send to kitchen via localStorage
+// TapFeast – Tablet Menu Logic
+// Handles: landing → app, theme toggle, category filter, cart, and sending orders to localStorage.
+
+const STORAGE_KEYS = {
+  THEME: "tapfeast_theme",
+  ORDERS: "tapfeast_orders",
+};
 
 const MENU_ITEMS = [
+  // STARTERS
   {
     id: "st1",
     name: "Crispy Garlic Fries",
     desc: "Hand-cut fries tossed in garlic butter, parsley & parmesan.",
     price: 7.5,
-    category: "Starters",
+    category: "starters",
     tag: "Most ordered",
-    img: "Crispy-Garlic-Fries.jpg",
+    img: "images/Crispy-Garlic-Fries.jpg",
   },
   {
     id: "st2",
     name: "Street-Style Nachos",
-    desc: "Corn chips, queso, pico de gallo, jalapeño & crema.",
-    price: 11.0,
-    category: "Starters",
-    tag: "Shareable",
-    img: "Street-Style-Nachos.jpg",
+    desc: "Corn chips with queso, pico de gallo & jalapeños.",
+    price: 9.25,
+    category: "starters",
+    tag: "Perfect for sharing",
+    img: "images/Street-Style-Nachos.jpg",
   },
   {
     id: "st3",
     name: "Tandoori Wings",
-    desc: "Charred chicken wings with smoky tandoori spice.",
-    price: 13.0,
-    category: "Starters",
+    desc: "Smoky tandoori-spiced chicken wings with mint yogurt dip.",
+    price: 10.9,
+    category: "starters",
     tag: "Spicy",
-    img: "Tandoori-Wings.jpg", // use your wings image here
+    img: "images/Tandoori-Wings.jpg",
   },
+
+  // MAINS
   {
     id: "mn1",
-    name: "Grilled Paneer Bowl",
-    desc: "Masala paneer, turmeric rice, roasted veggies & mint yogurt.",
+    name: "Butter Chicken Bowl",
+    desc: "Creamy tomato gravy, basmati rice & charred naan.",
     price: 17.5,
-    category: "Mains",
-    tag: "Vegetarian",
-    img: "Grilled-Paneer-Bowl.jpg",
+    category: "mains",
+    tag: "Chef special",
+    img: "images/Butter-Chicken.jpg",
   },
   {
     id: "mn2",
-    name: "Butter Chicken",
-    desc: "Creamy tomato sauce, charred chicken, basmati rice & naan.",
-    price: 18.5,
-    category: "Mains",
-    tag: "Signature",
-    img: "Butter-Chicken.jpg",
+    name: "Grilled Paneer Bowl",
+    desc: "Marinated paneer, veggies, herbed rice & cilantro chutney.",
+    price: 16.25,
+    category: "mains",
+    tag: "Vegetarian",
+    img: "images/Grilled-Paneer-Bowl.jpg",
   },
   {
     id: "mn3",
     name: "Sizzling Veggie Sizzler",
-    desc: "Seasonal vegetables on a sizzling platter with herb butter.",
-    price: 16.0,
-    category: "Mains",
-    tag: "New",
-    img: "Sizzling-Veggie-Sizzler.jpg",
+    desc: "Seasonal veggies on a hot plate, pepper sauce & fries.",
+    price: 18.0,
+    category: "mains",
+    tag: "Sizzles on arrival",
+    img: "images/Sizzling-Veggie-Sizzler.jpg",
   },
+
+  // DESSERTS
   {
     id: "ds1",
-    name: "Gulab Jamun Sundae",
-    desc: "Warm gulab jamun over vanilla ice cream & pistachio dust.",
-    price: 9.0,
-    category: "Desserts",
-    tag: "House special",
-    img: "Gulab-Jamun-Sundae.jpg",
+    name: "Chocolate Lava Cake",
+    desc: "Warm cake, molten center & vanilla ice cream.",
+    price: 8.75,
+    category: "desserts",
+    tag: "Best seller",
+    img: "images/Chocolate-Lava-Cake.jpg",
   },
   {
     id: "ds2",
-    name: "Chocolate Lava Cake",
-    desc: "Molten chocolate centre with whipped cream.",
-    price: 9.5,
-    category: "Desserts",
-    tag: "Rich",
-    img: "Chocolate-Lava-Cake.jpg",
+    name: "Gulab Jamun Sundae",
+    desc: "Gulab jamun with ice cream, nuts & saffron syrup.",
+    price: 7.95,
+    category: "desserts",
+    tag: "Indian fusion",
+    img: "images/Gulab-Jamun-Sundae.jpg",
   },
+
+  // DRINKS
   {
     id: "dr1",
     name: "Masala Lemon Soda",
-    desc: "Fresh lime, masala spice & fizz.",
-    price: 5.0,
-    category: "Drinks",
+    desc: "Sparkling lemonade with roasted cumin & black salt.",
+    price: 4.5,
+    category: "drinks",
     tag: "Refreshing",
-    img: "Masala-Lemon-Soda.jpg",
+    img: "images/Masala-Lemon-Soda.jpg",
   },
   {
     id: "dr2",
-    name: "Classic Mango Lassi",
-    desc: "Yogurt, mango pulp & saffron.",
-    price: 6.0,
-    category: "Drinks",
-    tag: "Sweet",
-    img: "mango-lassi-7556631_1920.jpg",
+    name: "Mango Lassi",
+    desc: "Thick mango yogurt drink with cardamom.",
+    price: 5.25,
+    category: "drinks",
+    tag: "Classic",
+    img: "images/mango-lassi-7556631_1920.jpg",
   },
   {
     id: "dr3",
     name: "Iced Espresso Tonic",
-    desc: "Double espresso over tonic & orange peel.",
-    price: 6.5,
-    category: "Drinks",
-    tag: "Caffeinated",
-    img: "Iced-Espresso-Tonic.jpg",
+    desc: "Double espresso with citrus tonic & ice.",
+    price: 5.9,
+    category: "drinks",
+    tag: "Barista pick",
+    img: "images/Iced-Espresso-Tonic.jpg",
   },
 ];
 
-const STORAGE_KEYS = {
-  ORDERS: "tapfeast_orders",
-  THEME: "tapfeast_theme",
-};
+let cart = {}; // { itemId: { item, qty } }
 
-let cart = {}; // { itemId: quantity }
+// DOM REFS
+const landingSection = document.getElementById("landing");
+const startOrderingBtn = document.getElementById("startOrderingBtn");
+const appShell = document.getElementById("appShell");
 
-const CATEGORY_ORDER = ["Starters", "Mains", "Desserts", "Drinks"];
+const menuGrid = document.getElementById("menuGrid");
+const categoryTabs = document.getElementById("categoryTabs");
+const cartList = document.getElementById("cartList");
+const cartBadge = document.getElementById("cartBadge");
+const cartTotalEl = document.getElementById("cartTotal");
+const clearCartBtn = document.getElementById("clearCartBtn");
+const placeOrderBtn = document.getElementById("placeOrderBtn");
+const tableInput = document.getElementById("tableInput");
+const themeToggle = document.getElementById("themeToggle");
+const toast = document.getElementById("toast");
 
-document.addEventListener("DOMContentLoaded", () => {
-  // THEME + MENU INITIALISATION
-  initTheme();
-  buildCategoryRadios();
-  const defaultCategory = CATEGORY_ORDER[0];
-  renderMenu(defaultCategory);
-  renderCart();
-
-  // ORDER BUTTON
-  document
-    .getElementById("placeOrderBtn")
-    .addEventListener("click", handlePlaceOrder);
-
-  // TABLE NUMBER CLAMP
-  const tableInput = document.getElementById("tableNumber");
-  tableInput.addEventListener("change", () => {
-    const v = parseInt(tableInput.value, 10);
-    if (Number.isNaN(v) || v <= 0) {
-      tableInput.value = 1;
-    }
-  });
-
-  // THEME TOGGLE
-  document
-    .getElementById("themeToggle")
-    .addEventListener("click", handleThemeToggle);
-
-  // LANDING SCREEN → APP TRANSITION
-  const startBtn = document.getElementById("startOrderingBtn");
-  const landing = document.getElementById("landing");
-  const appShell = document.getElementById("appShell");
-
-  if (startBtn && landing && appShell) {
-    startBtn.addEventListener("click", () => {
-      startBtn.classList.add("start-ordering-pressed");
-
-      landing.classList.add("landing-exit");
-
-      setTimeout(() => {
-        landing.style.display = "none";
-        appShell.classList.remove("hidden");
-        appShell.classList.add("app-enter");
-      }, 550);
-    });
-  }
-});
-
-/* THEME */
-
-function initTheme() {
-  const saved = localStorage.getItem(STORAGE_KEYS.THEME);
-  const prefersDark =
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-  const initial = saved || (prefersDark ? "dark" : "light");
-  setTheme(initial);
-}
-
-function setTheme(theme) {
-  const html = document.documentElement;
-  html.setAttribute("data-theme", theme);
-  localStorage.setItem(STORAGE_KEYS.THEME, theme);
-
-  const toggleBtn = document.getElementById("themeToggle");
-  if (toggleBtn) {
-    toggleBtn.textContent = theme === "dark" ? "☀️" : "🌙";
+// ---------- THEME ----------
+function applyStoredTheme() {
+  const stored = localStorage.getItem(STORAGE_KEYS.THEME);
+  if (stored === "dark" || stored === "light") {
+    document.documentElement.setAttribute("data-theme", stored);
+    if (themeToggle) themeToggle.textContent = stored === "dark" ? "☀️" : "🌙";
   }
 }
 
-function handleThemeToggle() {
+function setTheme(next) {
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem(STORAGE_KEYS.THEME, next);
+  themeToggle.textContent = next === "dark" ? "☀️" : "🌙";
+}
+
+function onThemeToggle() {
   const current =
     document.documentElement.getAttribute("data-theme") || "light";
   const next = current === "light" ? "dark" : "light";
   setTheme(next);
 }
 
-/* RADIO CATEGORY UI */
-
-function buildCategoryRadios() {
-  const container = document.getElementById("categoryRadios");
-  container.innerHTML = "";
-
-  CATEGORY_ORDER.forEach((cat, index) => {
-    const id = `cat-radio-${cat.toLowerCase()}`;
-
-    const wrapper = document.createElement("label");
-    wrapper.className = "category-radio";
-
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "menuCategory";
-    input.value = cat;
-    input.id = id;
-    if (index === 0) input.checked = true;
-
-    const labelSpan = document.createElement("span");
-    labelSpan.className = "category-radio-label";
-
-    const dot = document.createElement("span");
-    dot.className = "dot";
-
-    const text = document.createElement("span");
-    text.textContent = cat;
-
-    labelSpan.appendChild(dot);
-    labelSpan.appendChild(text);
-    wrapper.appendChild(input);
-    wrapper.appendChild(labelSpan);
-
-    input.addEventListener("change", () => {
-      if (input.checked) {
-        renderMenu(cat);
-      }
-    });
-
-    container.appendChild(wrapper);
+// ---------- LANDING ----------
+function enterApp() {
+  landingSection.style.display = "none";
+  appShell.classList.remove("app-hidden");
+  requestAnimationFrame(() => {
+    appShell.classList.add("app-enter");
   });
 }
 
-/* MENU RENDER */
-
-function renderMenu(category) {
-  const grid = document.getElementById("menuGrid");
-  grid.innerHTML = "";
-
-  const items = MENU_ITEMS.filter((i) => i.category === category);
-
-  items.forEach((item, index) => {
-    const card = createMenuCard(item, index);
-    grid.appendChild(card);
-  });
-}
-
-function createMenuCard(item, index) {
+// ---------- MENU RENDER ----------
+function createMenuCard(item) {
   const card = document.createElement("article");
   card.className = "menu-card";
-  card.style.animationDelay = `${(index % 5) * 0.04}s`;
+  card.dataset.category = item.category;
 
-  // image
-  const imgWrap = document.createElement("div");
-  imgWrap.className = "menu-image-wrap";
-
-  const img = document.createElement("img");
-  img.src = item.img;
-  img.alt = item.name;
-
-  imgWrap.appendChild(img);
-
-  // body
-  const body = document.createElement("div");
-  body.className = "menu-card-body";
-
-  const header = document.createElement("div");
-  header.className = "menu-card-header";
-
-  const textWrap = document.createElement("div");
-  const title = document.createElement("h3");
-  title.className = "menu-title";
-  title.textContent = item.name;
-
-  const desc = document.createElement("p");
-  desc.className = "menu-desc";
-  desc.textContent = item.desc;
-
-  textWrap.appendChild(title);
-  textWrap.appendChild(desc);
-
-  const metaTop = document.createElement("div");
-  metaTop.className = "menu-meta";
-
-  const price = document.createElement("span");
-  price.className = "menu-price";
-  price.textContent = formatCurrency(item.price);
-
-  metaTop.appendChild(price);
-
-  if (item.tag) {
-    const tag = document.createElement("span");
-    tag.className = "tag-pill";
-    tag.textContent = item.tag;
-    metaTop.appendChild(tag);
-  }
-
-  header.appendChild(textWrap);
-  header.appendChild(metaTop);
-
-  // controls
-  const controlsWrap = document.createElement("div");
-  controlsWrap.className = "card-controls";
-
-  const qtyControls = document.createElement("div");
-  qtyControls.className = "quantity-controls";
-
-  const minusBtn = document.createElement("button");
-  minusBtn.className = "qty-btn";
-  minusBtn.textContent = "−";
-
-  const qtyDisplay = document.createElement("span");
-  qtyDisplay.className = "qty-display";
-  qtyDisplay.textContent = cart[item.id] || 0;
-
-  const plusBtn = document.createElement("button");
-  plusBtn.className = "qty-btn";
-  plusBtn.textContent = "+";
-
-  minusBtn.addEventListener("click", () => {
-    updateCartQuantity(item.id, -1);
-    qtyDisplay.textContent = cart[item.id] || 0;
-  });
-
-  plusBtn.addEventListener("click", () => {
-    updateCartQuantity(item.id, 1);
-    qtyDisplay.textContent = cart[item.id] || 0;
-  });
-
-  qtyControls.appendChild(minusBtn);
-  qtyControls.appendChild(qtyDisplay);
-  qtyControls.appendChild(plusBtn);
-
-  const addBtn = document.createElement("button");
-  addBtn.className = "add-btn";
-  addBtn.textContent = "Add";
-  addBtn.addEventListener("click", () => {
-    updateCartQuantity(item.id, 1);
-    qtyDisplay.textContent = cart[item.id] || 0;
-  });
-
-  controlsWrap.appendChild(qtyControls);
-  controlsWrap.appendChild(addBtn);
-
-  body.appendChild(header);
-  body.appendChild(controlsWrap);
-
-  card.appendChild(imgWrap);
-  card.appendChild(body);
+  card.innerHTML = `
+    <div class="menu-card-image-wrap">
+      <img src="${item.img}" alt="${item.name}" />
+      ${
+        item.tag
+          ? `<span class="menu-card-badge">
+              ${item.tag}
+            </span>`
+          : ""
+      }
+    </div>
+    <div class="menu-card-body">
+      <h3 class="menu-card-title">${item.name}</h3>
+      <p class="menu-card-desc">${item.desc}</p>
+      <div class="menu-card-meta">
+        <span class="menu-card-price">$${item.price.toFixed(2)}</span>
+        <div class="menu-card-cta">
+          <span class="qty-badge" data-qty-for="${item.id}">0</span>
+          <button class="menu-add-btn" data-add-id="${item.id}">
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 
   return card;
 }
 
-/* CART */
+function renderMenu(category = "all") {
+  menuGrid.innerHTML = "";
+  const filtered =
+    category === "all"
+      ? MENU_ITEMS
+      : MENU_ITEMS.filter((item) => item.category === category);
+  filtered.forEach((item) => {
+    const card = createMenuCard(item);
+    menuGrid.appendChild(card);
+  });
+  syncQtyBadges();
+}
 
-function updateCartQuantity(itemId, delta) {
-  const current = cart[itemId] || 0;
-  const next = Math.max(0, current + delta);
-  if (next === 0) {
+// ---------- CATEGORY FILTER ----------
+function onCategoryClick(e) {
+  const btn = e.target.closest(".category-tab");
+  if (!btn) return;
+
+  const category = btn.dataset.category;
+  document
+    .querySelectorAll(".category-tab")
+    .forEach((el) => el.classList.remove("active"));
+  btn.classList.add("active");
+
+  renderMenu(category);
+}
+
+// ---------- CART LOGIC ----------
+function addToCart(itemId) {
+  const item = MENU_ITEMS.find((i) => i.id === itemId);
+  if (!item) return;
+
+  if (!cart[itemId]) {
+    cart[itemId] = { item, qty: 0 };
+  }
+  cart[itemId].qty += 1;
+  renderCart();
+  syncQtyBadges();
+  showToast(`${item.name} added to order`);
+}
+
+function changeCartQty(itemId, delta) {
+  if (!cart[itemId]) return;
+  cart[itemId].qty += delta;
+  if (cart[itemId].qty <= 0) {
     delete cart[itemId];
-  } else {
-    cart[itemId] = next;
   }
   renderCart();
+  syncQtyBadges();
+}
+
+function clearCart() {
+  cart = {};
+  renderCart();
+  syncQtyBadges();
 }
 
 function renderCart() {
-  const container = document.getElementById("cartItems");
-  container.innerHTML = "";
+  cartList.innerHTML = "";
 
-  const itemIds = Object.keys(cart);
-  if (itemIds.length === 0) {
-    const p = document.createElement("p");
-    p.className = "empty-cart";
-    p.textContent = "No items yet. Tap + to add to your order.";
-    container.appendChild(p);
-    document.getElementById("cartTotal").textContent = "$0.00";
+  const entries = Object.values(cart);
+  if (!entries.length) {
+    cartList.innerHTML =
+      '<p class="cart-empty">No items added yet. Tap “Add” to start.</p>';
+    cartBadge.textContent = "0 items";
+    cartTotalEl.textContent = "$0.00";
     return;
   }
 
   let total = 0;
+  let count = 0;
 
-  itemIds.forEach((id) => {
-    const qty = cart[id];
-    const item = MENU_ITEMS.find((m) => m.id === id);
-    if (!item) return;
-
-    const lineTotal = item.price * qty;
-    total += lineTotal;
+  entries.forEach(({ item, qty }) => {
+    total += item.price * qty;
+    count += qty;
 
     const row = document.createElement("div");
     row.className = "cart-item";
-
-    const title = document.createElement("h4");
-    title.className = "cart-item-title";
-    title.textContent = item.name;
-
-    const meta = document.createElement("div");
-    meta.className = "cart-item-meta";
-    meta.textContent = `${qty} × ${formatCurrency(item.price)}`;
-
-    const price = document.createElement("div");
-    price.className = "cart-item-price";
-    price.textContent = formatCurrency(lineTotal);
-
-    const controls = document.createElement("div");
-    controls.className = "cart-item-controls";
-
-    const qtyControls = document.createElement("div");
-    qtyControls.className = "quantity-controls";
-
-    const minusBtn = document.createElement("button");
-    minusBtn.className = "qty-btn";
-    minusBtn.textContent = "−";
-
-    const qtyDisplay = document.createElement("span");
-    qtyDisplay.className = "qty-display";
-    qtyDisplay.textContent = qty;
-
-    const plusBtn = document.createElement("button");
-    plusBtn.className = "qty-btn";
-    plusBtn.textContent = "+";
-
-    minusBtn.addEventListener("click", () => updateCartQuantity(id, -1));
-    plusBtn.addEventListener("click", () => updateCartQuantity(id, 1));
-
-    qtyControls.appendChild(minusBtn);
-    qtyControls.appendChild(qtyDisplay);
-    qtyControls.appendChild(plusBtn);
-
-    const removeBtn = document.createElement("button");
-    removeBtn.className = "secondary-btn";
-    removeBtn.textContent = "Remove";
-    removeBtn.addEventListener("click", () => {
-      delete cart[id];
-      renderCart();
-    });
-
-    controls.appendChild(qtyControls);
-    controls.appendChild(removeBtn);
-
-    row.appendChild(title);
-    row.appendChild(price);
-    row.appendChild(meta);
-    row.appendChild(controls);
-
-    container.appendChild(row);
+    row.innerHTML = `
+      <div class="cart-item-main">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-meta">$${item.price.toFixed(
+          2
+        )} · ${item.category}</div>
+      </div>
+      <div class="cart-item-controls">
+        <div class="cart-qty-controls">
+          <button class="cart-qty-btn" data-change="-1" data-id="${item.id}">-</button>
+          <span class="cart-qty">${qty}</span>
+          <button class="cart-qty-btn" data-change="1" data-id="${item.id}">+</button>
+        </div>
+        <div class="cart-item-price">$${(item.price * qty).toFixed(2)}</div>
+      </div>
+    `;
+    cartList.appendChild(row);
   });
 
-  document.getElementById("cartTotal").textContent = formatCurrency(total);
+  cartBadge.textContent = `${count} item${count !== 1 ? "s" : ""}`;
+  cartTotalEl.textContent = `$${total.toFixed(2)}`;
 }
 
-/* ORDER PLACEMENT */
-
-function handlePlaceOrder() {
-  const messageEl = document.getElementById("orderMessage");
-  messageEl.textContent = "";
-
-  const itemIds = Object.keys(cart);
-  if (itemIds.length === 0) {
-    messageEl.textContent = "Add some items to your order first.";
-    messageEl.style.color = "#b91c1c";
-    return;
-  }
-
-  const tableInput = document.getElementById("tableNumber");
-  const tableNumber = parseInt(tableInput.value, 10);
-  if (Number.isNaN(tableNumber) || tableNumber <= 0) {
-    messageEl.textContent = "Please enter a valid table number.";
-    messageEl.style.color = "#b91c1c";
-    return;
-  }
-
-  const now = new Date();
-  const orderItems = itemIds.map((id) => {
-    const qty = cart[id];
-    const item = MENU_ITEMS.find((m) => m.id === id);
-    return {
-      id,
-      name: item.name,
-      qty,
-      price: item.price,
-    };
+function syncQtyBadges() {
+  document.querySelectorAll("[data-qty-for]").forEach((badge) => {
+    const id = badge.dataset.qtyFor;
+    const entry = cart[id];
+    badge.textContent = entry ? entry.qty : 0;
   });
+}
 
-  const total = orderItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+// ---------- ORDER + LOCALSTORAGE ----------
+function getOrdersFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.ORDERS);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveOrdersToStorage(orders) {
+  localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+}
+
+function placeOrder() {
+  const entries = Object.values(cart);
+  if (!entries.length) {
+    showToast("Add at least one item before sending.");
+    return;
+  }
+
+  const tableNumber = (tableInput.value || "").trim() || "1";
+
+  const items = entries.map(({ item, qty }) => ({
+    id: item.id,
+    name: item.name,
+    qty,
+    price: item.price,
+  }));
+
+  const total = items.reduce((sum, it) => sum + it.price * it.qty, 0);
 
   const order = {
-    id: now.getTime(),
+    id: `ord_${Date.now()}`,
     table: tableNumber,
-    items: orderItems,
+    items,
     total,
+    createdAt: new Date().toISOString(),
     status: "pending",
-    createdAt: now.toISOString(),
   };
 
-  const existingRaw = localStorage.getItem(STORAGE_KEYS.ORDERS) || "[]";
-  const existing = safeParse(existingRaw, []);
-
+  const existing = getOrdersFromStorage();
   existing.push(order);
-  localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(existing));
+  saveOrdersToStorage(existing);
 
-  cart = {};
-  renderCart();
-
-  const checkedRadio = document.querySelector(
-    "input[name='menuCategory']:checked"
-  );
-  const category = checkedRadio ? checkedRadio.value : CATEGORY_ORDER[0];
-  renderMenu(category);
-
-  messageEl.textContent = `Order #${order.id} sent to kitchen for Table ${tableNumber}.`;
-  messageEl.style.color = "#166534";
-
-  setTimeout(() => {
-    messageEl.textContent = "";
-  }, 4000);
+  clearCart();
+  showToast(`Order sent to kitchen (Table ${tableNumber})`);
 }
 
-/* HELPERS */
+// ---------- TOAST ----------
+let toastTimeout;
+function showToast(msg) {
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.remove("hidden");
+  toast.classList.add("show");
 
-function formatCurrency(value) {
-  return `$${value.toFixed(2)}`;
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.classList.add("hidden"), 220);
+  }, 2000);
 }
 
-function safeParse(str, fallback) {
-  try {
-    const parsed = JSON.parse(str);
-    return Array.isArray(parsed) ? parsed : fallback;
-  } catch {
-    return fallback;
+// ---------- EVENTS ----------
+document.addEventListener("click", (e) => {
+  const addBtn = e.target.closest("[data-add-id]");
+  if (addBtn) {
+    addToCart(addBtn.dataset.addId);
   }
+
+  const qtyBtn = e.target.closest(".cart-qty-btn");
+  if (qtyBtn) {
+    const delta = parseInt(qtyBtn.dataset.change, 10) || 0;
+    const id = qtyBtn.dataset.id;
+    changeCartQty(id, delta);
+  }
+});
+
+if (categoryTabs) {
+  categoryTabs.addEventListener("click", onCategoryClick);
 }
+
+if (startOrderingBtn) {
+  startOrderingBtn.addEventListener("click", enterApp);
+}
+
+if (clearCartBtn) {
+  clearCartBtn.addEventListener("click", clearCart);
+}
+
+if (placeOrderBtn) {
+  placeOrderBtn.addEventListener("click", placeOrder);
+}
+
+if (themeToggle) {
+  themeToggle.addEventListener("click", onThemeToggle);
+}
+
+// INITIALIZE
+applyStoredTheme();
+renderMenu("all");
+renderCart();
