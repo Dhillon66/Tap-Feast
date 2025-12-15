@@ -5,7 +5,7 @@ import { db, collection, addDoc, serverTimestamp } from "./firebase.js";
 
 const STORAGE_KEYS = {
   THEME: "tapfeast_theme",
-  ORDERS: "tapfeast_orders", // kept for compatibility but no longer used for cross-device
+  ORDERS: "tapfeast_orders", // kept only for older localStorage compatibility
 };
 
 const MENU_ITEMS = [
@@ -119,21 +119,20 @@ const MENU_ITEMS = [
 
 let cart = {}; // { itemId: { item, qty } }
 
-// DOM REFS
-const landingSection = document.getElementById("landing");
-const startOrderingBtn = document.getElementById("startOrderingBtn");
-const appShell = document.getElementById("appShell");
-
-const menuGrid = document.getElementById("menuGrid");
-const categoryTabs = document.getElementById("categoryTabs");
-const cartList = document.getElementById("cartList");
-const cartBadge = document.getElementById("cartBadge");
-const cartTotalEl = document.getElementById("cartTotal");
-const clearCartBtn = document.getElementById("clearCartBtn");
-const placeOrderBtn = document.getElementById("placeOrderBtn");
-const tableInput = document.getElementById("tableInput");
-const themeToggle = document.getElementById("themeToggle");
-const toast = document.getElementById("toast");
+// DOM refs (assigned in DOMContentLoaded)
+let landingSection,
+  startOrderingBtn,
+  appShell,
+  menuGrid,
+  categoryTabs,
+  cartList,
+  cartBadge,
+  cartTotalEl,
+  clearCartBtn,
+  placeOrderBtn,
+  tableInput,
+  themeToggle,
+  toast;
 
 // ---------- THEME ----------
 function applyStoredTheme() {
@@ -158,10 +157,15 @@ function onThemeToggle() {
 
 // ---------- LANDING ----------
 function enterApp() {
-  landingSection.style.display = "none";
-  appShell.classList.remove("app-hidden");
+  // Re-grab safely to avoid null crashes
+  const landing = document.getElementById("landing");
+  const shell = document.getElementById("appShell");
+  if (!landing || !shell) return;
+
+  landing.style.display = "none";
+  shell.classList.remove("app-hidden");
   requestAnimationFrame(() => {
-    appShell.classList.add("app-enter");
+    shell.classList.add("app-enter");
   });
 }
 
@@ -201,7 +205,10 @@ function createMenuCard(item) {
 }
 
 function renderMenu(category = "all") {
+  if (!menuGrid) return;
+
   menuGrid.innerHTML = "";
+
   const filtered =
     category === "all"
       ? MENU_ITEMS
@@ -221,9 +228,12 @@ function onCategoryClick(e) {
   if (!btn) return;
 
   const category = btn.dataset.category;
-  document.querySelectorAll(".category-tab").forEach((el) => el.classList.remove("active"));
-  btn.classList.add("active");
 
+  document
+    .querySelectorAll(".category-tab")
+    .forEach((el) => el.classList.remove("active"));
+
+  btn.classList.add("active");
   renderMenu(category);
 }
 
@@ -232,7 +242,9 @@ function addToCart(itemId) {
   const item = MENU_ITEMS.find((i) => i.id === itemId);
   if (!item) return;
 
-  if (!cart[itemId]) cart[itemId] = { item, qty: 0 };
+  if (!cart[itemId]) {
+    cart[itemId] = { item, qty: 0 };
+  }
   cart[itemId].qty += 1;
 
   renderCart();
@@ -257,6 +269,8 @@ function clearCart() {
 }
 
 function renderCart() {
+  if (!cartList || !cartBadge || !cartTotalEl) return;
+
   cartList.innerHTML = "";
 
   const entries = Object.values(cart);
@@ -277,10 +291,13 @@ function renderCart() {
 
     const row = document.createElement("div");
     row.className = "cart-item";
+
     row.innerHTML = `
       <div class="cart-item-main">
         <div class="cart-item-name">${item.name}</div>
-        <div class="cart-item-meta">$${item.price.toFixed(2)} · ${item.category}</div>
+        <div class="cart-item-meta">$${item.price.toFixed(
+          2
+        )} · ${item.category}</div>
       </div>
       <div class="cart-item-controls">
         <div class="cart-qty-controls">
@@ -291,6 +308,7 @@ function renderCart() {
         <div class="cart-item-price">$${(item.price * qty).toFixed(2)}</div>
       </div>
     `;
+
     cartList.appendChild(row);
   });
 
@@ -314,7 +332,7 @@ async function placeOrder() {
     return;
   }
 
-  const tableNumber = (tableInput.value || "").trim() || "1";
+  const tableNumber = (tableInput?.value || "").trim() || "1";
 
   const items = entries.map(({ item, qty }) => ({
     id: item.id,
@@ -334,7 +352,7 @@ async function placeOrder() {
     status: "pending",
   };
 
-  placeOrderBtn.disabled = true;
+  if (placeOrderBtn) placeOrderBtn.disabled = true;
 
   try {
     await addDoc(collection(db, "orders"), {
@@ -354,7 +372,7 @@ async function placeOrder() {
     console.error(err);
     showToast("Order failed. Check Firebase config / internet.");
   } finally {
-    placeOrderBtn.disabled = false;
+    if (placeOrderBtn) placeOrderBtn.disabled = false;
   }
 }
 
@@ -362,6 +380,7 @@ async function placeOrder() {
 let toastTimeout;
 function showToast(msg) {
   if (!toast) return;
+
   toast.textContent = msg;
   toast.classList.remove("hidden");
   toast.classList.add("show");
@@ -374,25 +393,47 @@ function showToast(msg) {
 }
 
 // ---------- EVENTS ----------
-document.addEventListener("click", (e) => {
-  const addBtn = e.target.closest("[data-add-id]");
-  if (addBtn) addToCart(addBtn.dataset.addId);
+function setupEvents() {
+  // Global click handlers (menu add + cart +/-)
+  document.addEventListener("click", (e) => {
+    const addBtn = e.target.closest("[data-add-id]");
+    if (addBtn) addToCart(addBtn.dataset.addId);
 
-  const qtyBtn = e.target.closest(".cart-qty-btn");
-  if (qtyBtn) {
-    const delta = parseInt(qtyBtn.dataset.change, 10) || 0;
-    const id = qtyBtn.dataset.id;
-    changeCartQty(id, delta);
-  }
+    const qtyBtn = e.target.closest(".cart-qty-btn");
+    if (qtyBtn) {
+      const delta = parseInt(qtyBtn.dataset.change, 10) || 0;
+      const id = qtyBtn.dataset.id;
+      changeCartQty(id, delta);
+    }
+  });
+
+  if (categoryTabs) categoryTabs.addEventListener("click", onCategoryClick);
+  if (startOrderingBtn) startOrderingBtn.addEventListener("click", enterApp);
+  if (clearCartBtn) clearCartBtn.addEventListener("click", clearCart);
+  if (placeOrderBtn) placeOrderBtn.addEventListener("click", placeOrder);
+  if (themeToggle) themeToggle.addEventListener("click", onThemeToggle);
+}
+
+// ---------- INIT ----------
+document.addEventListener("DOMContentLoaded", () => {
+  // Assign DOM refs after DOM is ready
+  landingSection = document.getElementById("landing");
+  startOrderingBtn = document.getElementById("startOrderingBtn");
+  appShell = document.getElementById("appShell");
+
+  menuGrid = document.getElementById("menuGrid");
+  categoryTabs = document.getElementById("categoryTabs");
+  cartList = document.getElementById("cartList");
+  cartBadge = document.getElementById("cartBadge");
+  cartTotalEl = document.getElementById("cartTotal");
+  clearCartBtn = document.getElementById("clearCartBtn");
+  placeOrderBtn = document.getElementById("placeOrderBtn");
+  tableInput = document.getElementById("tableInput");
+  themeToggle = document.getElementById("themeToggle");
+  toast = document.getElementById("toast");
+
+  applyStoredTheme();
+  renderMenu("all");
+  renderCart();
+  setupEvents();
 });
-
-if (categoryTabs) categoryTabs.addEventListener("click", onCategoryClick);
-if (startOrderingBtn) startOrderingBtn.addEventListener("click", enterApp);
-if (clearCartBtn) clearCartBtn.addEventListener("click", clearCart);
-if (placeOrderBtn) placeOrderBtn.addEventListener("click", placeOrder);
-if (themeToggle) themeToggle.addEventListener("click", onThemeToggle);
-
-// INITIALIZE
-applyStoredTheme();
-renderMenu("all");
-renderCart();
